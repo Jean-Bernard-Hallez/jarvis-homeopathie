@@ -4,7 +4,6 @@ jv_pg_homeopathie () {
 
 chemin=${PWD}"/plugins_installed/jarvis-homeopathie/homeopathie.txt"
 	
-lignemax=`grep -c '# ##'   $chemin`
 symptome_homeopathie=`echo $order | sed 's/.* //'`
 
 ligne_num_homeopathie_total=`grep -i -n $symptome_homeopathie  $chemin | cut -d: -f1 | wc -w`
@@ -21,9 +20,9 @@ fi
 
 
 if [[ "$ligne_num_homeopathie_total" == "1" ]]; then 
-dire_homeopathie="il y a qu' 1 traitement possible:"
+dire_homeopathie="Pour le problème de $symptome_homeopathie il y a qu' 1 traitement possible:"
 else
-dire_homeopathie="il y a $ligne_num_homeopathie_total traitements possible:"
+dire_homeopathie="Pour le problème de $symptome_homeopathie il y a $ligne_num_homeopathie_total traitements possible:"
 fi
 
 if [[ "$jv_pg_homeopathieSMS" == "" ]]; then 
@@ -61,15 +60,14 @@ fi
 }
 
 jv_pg_homeopathie_sms () {
-if [ "$order" = "$PNOM" ]; then 
-say "Je fais partir... "; 
-fi
 
 if [[ "$order" =~ "person" ]]; then say "Ok, soignez-vous bien...";
 return;
 fi
 
-if [[ "$order" != "$PNOM" ]]; then 
+if [[ "$order" =~ "$PNOM" ]]; then 
+say "Je fais partir... "; 
+else
 say "Désolé je n'ai pas reconnu le nom... Annulation..."; 
 return; 
 fi
@@ -119,16 +117,13 @@ say "Puis je vous envoyer le nom des granules par sms à $(jv_pg_ct_ilyanom) ou 
 }
 
 jv_pg_homeopathie_recommandation3_sms() {
-if [ "$order" = "$PNOM" ]; then 
-say "Je fais partir... "; 
-fi
-
-if [[ "$order" =~ "person" ]]; then 
-say "Ok, soignez-vous bien...";
+if [[ "$order" =~ "person" ]]; then say "Ok, soignez-vous bien...";
 return;
 fi
 
-if [[ "$order" != "$PNOM" ]]; then 
+if [[ "$order" =~ "$PNOM" ]]; then 
+say "Je fais partir... "; 
+else
 say "Désolé je n'ai pas reconnu le nom... Annulation..."; 
 return; 
 fi
