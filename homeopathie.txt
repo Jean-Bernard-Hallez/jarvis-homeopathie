@@ -6,7 +6,7 @@ Allium cepa - Coryza - Rhinopharyngite aiguë - Rhume des foins - Toux spasmodiq
 Anacardium orientale - Fatigue intellectuelle - Dyspepsie - Troubles de la mémoire
 Antimonium crudum - Diarrhée - Vomissements du nourrisson - Dyspepsie - Verrues plantaires
 Anthracinum - Anthrax et panaris
-Apis mellifica - Piqûres d’insectes - Brûlures légères - Engelures - Erythème solaire - Urticaire
+Apis mellifica - Piqûres d’insectes -  Brulures légères - Engelures - Erythème solaire - Urticaire
 Argentum nitricum - Angine - Laryngite - Pharyngite - Ulcère d’estomac - Gastrite - Diarrhée - Dyspepsie - Trac
 Arnica montana - Entorse - Contusions et ecchymoses - Crampes musculaires - Extraction dentaire - Lumbago - Torticolis
 Arsenicum album - Diarrhée - Gastroentérite - Asthme - Coryza
@@ -117,6 +117,6 @@ Teucrium marum - Hoquet
 Theridion currassavicum - Insomnie
 Thuya occidentalis - Verrues
 # U
-Urtica urens - Brûlures légères - Erythème solaire - Urticaire
+Urtica urens -  Brulures légères - Erythème solaire - Urticaire
 # V
 Veratrum album - Diarrée - Vomissements
