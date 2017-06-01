@@ -3,14 +3,20 @@
 jv_pg_homeopathie () {
 
 chemin=${PWD}"/plugins_installed/jarvis-homeopathie/homeopathie.txt"
-	
-symptome_homeopathie=`echo $order | sed 's/.* //'`
-
-ligne_num_homeopathie_total=`grep -i -n $symptome_homeopathie  $chemin | cut -d: -f1 | wc -w`
+symptome_homeopathie_sed
+symptome_homeopathie_identique=""
+symptome_homeopathie_totalmots=`echo "$symptome_homeopathie" | grep -o " " | wc -l`
+if [[ `echo $symptome_homeopathie | wc -c` -le "3" ]]; then say "je n'ai pas bien saisie ta demande, merci d'essayer de bien prononcer le dernier mot..."; return; fi
+ligne_num_homeopathie_total=`grep -i -n "\-$symptome_homeopathie-" $chemin | cut -d: -f1 | wc -w`
 ligne_num_homeopathie_total1="1"
 
-if [[ "$ligne_num_homeopathie_total" == "0" ]]; then 
-say "Désolé, je ne trouve pas de traitement pour $order"
+homeopathie_test_resulat
+if test -n "$symptome_homeopathie_identique"; then 
+return; 
+fi
+
+if [[ "$ligne_num_homeopathie_total" == "0" ]]; then
+say "Désolé, je ne trouve rien pour $order, un problème d'orthographe peut-être de ma part"
 say "Essayez peut-être de trouver un synonyme de votre mal-être..."
 homeopathie_feuxvert=""
 return;
@@ -18,11 +24,10 @@ else
 homeopathie_feuxvert="Ok"
 fi
 
-
 if [[ "$ligne_num_homeopathie_total" == "1" ]]; then 
-dire_homeopathie="Pour le problème de $symptome_homeopathie il y a qu' 1 traitement possible:"
+dire_homeopathie="J'ai un résultat pour le problème de $symptome_homeopathie avec 1 traitement possible:"
 else
-dire_homeopathie="Pour le problème de $symptome_homeopathie il y a $ligne_num_homeopathie_total traitements possible:"
+dire_homeopathie="J'ai un résultat pour le problème de $symptome_homeopathie il y a $ligne_num_homeopathie_total traitements possible:"
 fi
 
 if [[ "$jv_pg_homeopathieSMS" == "" ]]; then 
@@ -31,7 +36,12 @@ else
 homeopathie_sms="$dire_homeopathie "
 fi
 
-regarde_traitement_homeopathie
+if [[ "$jv_pg_homeopathieSMS" == "" ]]; then 
+say "$ligne_num_homeopathie"
+else
+homeopathie_sms="$homeopathie_sms $ligne_num_homeopathie."
+fi
+
 
 if [[ "$jv_pg_homeopathieSMS" == "" ]]; then
 	if [[ "$homeopathie_feuxvert" == "Ok" ]]; then say "A qui j'envoie ce sms ? $(jv_pg_ct_ilyanom) ou personne ?"
@@ -44,20 +54,11 @@ fi
 
 }
 
-regarde_traitement_homeopathie () {
-if [[ "$ligne_num_homeopathie_total1" -lt "$(( $ligne_num_homeopathie_total + 1 ))" ]]; then
-ligne_num_homeopathie=`grep -i $symptome_homeopathie  $chemin | cut -d: -f1 | sed -n $ligne_num_homeopathie_total1\p | cut -d"-" -f1`
-
-if [[ "$jv_pg_homeopathieSMS" == "" ]]; then 
-say "$ligne_num_homeopathie"
-else
-homeopathie_sms="$homeopathie_sms $ligne_num_homeopathie."
-fi
-
-ligne_num_homeopathie_total1=$(( $ligne_num_homeopathie_total1 + 1 ))
-regarde_traitement_homeopathie
-fi
+symptome_homeopathie_sed ()  {
+symptome_homeopathie=`echo "$order" | sed -e "s/'/ /g" | sed -e "s/Ok/Hoquet/g" | sed -e "s/ok/Hoquet/g" | sed -e "s/ homéopathique//g" | sed -e "s/ homéopathie//g" | sed -e "s/ pour//g" | sed -e "s/ traitement//g"`
 }
+
+
 
 jv_pg_homeopathie_sms () {
 
@@ -131,4 +132,89 @@ fi
 homeopathie_urgence="Allium cepa 9 CH -Apis mellifica 7 CH - Arnica montana 7 CH - Belladona 9 CH - Chamomilla 9 CH - China 9 CH - Cocculine - Drosera 9 CH - Gelsemium 9 CH - Nux vomica 7 CH -Oscillococcinum 200 -Poumon histamine 9 CH - Rhus toxicodendron 9 CH"
 commands="$(jv_get_commands)"; jv_handle_order "MESSEXTERNE ; $PNOM ; $homeopathie_urgence"; return
 }
+
+homeopathie_test_resulat () {
+
+symptome_homeopathie_trouve="-$symptome_homeopathie-"
+if [[ `echo "$symptome_homeopathie" | cut -c1` == " " ]]; then
+symptome_homeopathie=`echo "\-$symptome_homeopathie-" | cut -c2-`
+fi
+
+if [[ `echo "$symptome_homeopathie" | tail -c 1` == " " ]]; then
+symptome_homeopathie=`echo "\-$symptome_homeopathie-" | sed "s/.$//"`
+fi
+
+# jv_success "Recherche avec ces mots:.....$symptome_homeopathie..pour....$symptome_homeopathie_trouve..."
+
+symptome_homeopathie1=$symptome_homeopathie
+
+ligne_num_homeopathie_total=`grep -i -n "\-$symptome_homeopathie-"  $chemin | cut -d: -f1 | wc -w`
+
+if [[ "$ligne_num_homeopathie_total" -ge "1" ]]; then
+ligne_num_homeopathie=`grep -i "\-$symptome_homeopathie-"  $chemin | cut -d"-" -f1 | sort | uniq | paste -s -d ","`
+return
+fi
+	if [[ "$ligne_num_homeopathie_total" == "0" ]]; then
+	symptome_homeopathie=`echo $symptome_homeopathie | cut -d" " -f2-`
+	ligne_num_homeopathie_total=`grep -i -n "\-$symptome_homeopathie-"  $chemin | cut -d: -f1 | wc -w`
+	fi
+
+
+
+	if [[ "$symptome_homeopathie" == "$symptome_homeopathie1" ]]; then 
+	symptome_homeopathie="$symptome_homeopathie"
+	symptome_homeopathie_trouve="-$symptome_homeopathie-"
+	ligne_num_homeopathie=`grep -i "\-$symptome_homeopathie-"  $chemin | cut -d"-" -f1 | sort | uniq | paste -s -d ","`
+	
+	homeopathie_test_resulat1
+	return;
+	else
+
+	homeopathie_test_resulat
+	return
+	fi
+
+symptome_homeopathie="$symptome_homeopathie"
+symptome_homeopathie_trouve="-$symptome_homeopathie-"
+ligne_num_homeopathie=`grep -i "\-$symptome_homeopathie-"  $chemin | cut -d"-" -f1 | sort | uniq | paste -s -d ","`
+homeopathie_test_resulat
+
+
+}
+
+homeopathie_test_resulat1 () {
+symptome_homeopathie_trouve="-$symptome_homeopathie"
+if [[ `echo "$symptome_homeopathie" | cut -c1` == " " ]]; then
+symptome_homeopathie=`echo "$symptome_homeopathie" | cut -c2-`
+fi
+
+if [[ `echo "$symptome_homeopathie" | tail -c 1` == " " ]]; then
+symptome_homeopathie=`echo "$symptome_homeopathie" | sed "s/.$//"`
+fi
+
+# jv_success "Recherche N° 2 avec ces mots:.....$symptome_homeopathie....."
+
+symptome_homeopathie1=$symptome_homeopathie
+
+ligne_num_homeopathie_total=`grep -i -n "\-$symptome_homeopathie"  $chemin | cut -d: -f1 | wc -w`
+
+if [[ "$ligne_num_homeopathie_total" == "0" ]]; then
+symptome_homeopathie=`echo $symptome_homeopathie | cut -d" " -f2-`
+ligne_num_homeopathie_total=`grep -i -n "\-$symptome_homeopathie"  $chemin | cut -d: -f1 | wc -w`
+# if [[ "$symptome_homeopathie" == "-" ]]; then return; fi
+fi
+
+if [[ "$symptome_homeopathie" == "$symptome_homeopathie1" ]]; then 
+if [[ "$ligne_num_homeopathie_total" -ge "1" ]]; then
+say "j'ai bien trouvé quelque chose mais il me faut plus de précision..."
+symptome_homeopathie_identique=`grep -ino "\-$symptome_homeopathie.*\.*" $chemin | cut -d- -f2 | sort | uniq | paste -s -d "," | sed -e "s/,/ ou /g"`
+say "veuillez reformuler votre requette avec simplement:"
+say "Quel traitement homéopathique pour la $symptome_homeopathie_identique"
+return
+fi
+return
+fi
+homeopathie_test_resulat1
+}
+
 
