@@ -1,10 +1,11 @@
 *DOSE*HOMEOPA*==jv_pg_homeopathie_recommandation1
 *RECOM*HOMEOPA*==jv_pg_homeopathie_recommandation2
 *TROUS*HOMEOPA*==memo_homeopathie="$order"; jv_pg_homeopathie_recommandation3; 
->(*)==if [[ "$homeopathie" =~ "person" ]]; then commands="$(jv_get_commands)"; jv_handle_order "GOTOFINOK"; return; else jv_pg_ct_verinoms && jv_pg_homeopathie_recommandation3_sms; fi
+>(*)==if [[ "$homeopathie" =~ "person" ]]; then commands="$(jv_get_commands)"; jv_handle_order "GOTOFINOK"; return; else jv_pg_homeopathie_recommandation3_sms; fi
 
 
 *HOMEOPATHI*==memo_homeopathie="$1" && jv_pg_homeopathie; if [[ "$homeopathie_feuxvert" == "" ]]; then commands="$(jv_get_commands)"; jv_handle_order "GOTOFINOK"; return; fi
->(*)==jv_pg_ct_verinoms && jv_pg_homeopathie_sms;
+>(*)==jv_pg_homeopathie_sms;
 
-GOTOFINOK==
+
+GOTOFINOK==jv_pg_homeopathie_reset
