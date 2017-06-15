@@ -1,11 +1,10 @@
 *DOSE*HOMEOPA*==jv_pg_homeopathie_recommandation1
 *RECOM*HOMEOPA*==jv_pg_homeopathie_recommandation2
-*TROUS*HOMEOPA*==memo_homeopathie="$order"; jv_pg_homeopathie_recommandation3; 
->(*)==if [[ "$homeopathie" =~ "person" ]]; then commands="$(jv_get_commands)"; jv_handle_order "GOTOFINOK"; return; else jv_pg_homeopathie_recommandation3_sms; fi
+*TROUS*HOMEOPA*==memo_homeopathie="$order"; jv_pg_homeopathie_recommandation3 && if [[ "$GOTOSORTIHOMEOPATHI" == "FIN" ]]; then commands="$(jv_get_commands)"; jv_handle_order "POIUYTREZA"; return; fi
+>(*)==if [[ "$GOTOSORTIHOMEOPATHI" == "FIN" ]]; then commands="$(jv_get_commands)"; jv_handle_order "POIUYTREZA"; return; else jv_pg_homeopathie_recommandation3_sms; fi 
 
 
-*HOMEOPATHI*==memo_homeopathie="$1" && jv_pg_homeopathie; if [[ "$homeopathie_feuxvert" == "" ]]; then commands="$(jv_get_commands)"; jv_handle_order "GOTOFINOK"; return; fi
->(*)==jv_pg_homeopathie_sms;
+*HOMEOPATHI*==if [[ "$GOTOSORTIHOMEOPATHI" == "FIN" ]]; then commands="$(jv_get_commands)"; jv_handle_order "POIUYTREZA"; return; else memo_homeopathie="$1" && jv_pg_homeopathie; fi && if [[ "$GOTOSORTIHOMEOPATHI" == "FIN" ]]; then commands="$(jv_get_commands)"; jv_handle_order "POIUYTREZA"; return; fi
+>(*)==if [[ "$GOTOSORTIHOMEOPATHI" == "FIN" ]]; then commands="$(jv_get_commands)"; jv_handle_order "POIUYTREZA"; return; else jv_pg_homeopathie_sms; fi; return
 
-
-GOTOFINOK==jv_pg_homeopathie_reset
+POIUYTREZA==GOTOSORTIHOMEOPATHI=""; jv_pg_homeopathie_reset; return; 

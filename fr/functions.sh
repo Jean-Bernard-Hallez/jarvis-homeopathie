@@ -18,10 +18,10 @@ fi
 if [[ "$ligne_num_homeopathie_total" == "0" ]]; then
 say "Désolé, je ne trouve rien pour $order, un problème d'orthographe peut-être de ma part";
 say "Essayez peut-être de trouver un synonyme de votre mal-être...";
-homeopathie_feuxvert=""
+GOTOSORTIHOMEOPATHI="FIN"
 return;
 else
-homeopathie_feuxvert="Ok";
+GOTOSORTIHOMEOPATHI="Ok";
 fi
 
 if [[ "$ligne_num_homeopathie_total" == "1" ]]; then 
@@ -30,17 +30,19 @@ else
 dire_homeopathie="J'ai un résultat pour le problème de $symptome_homeopathie il y a $ligne_num_homeopathie_total traitements possible:";
 fi
 
-say "$dire_homeopathie";
 homeopathie_sms=`cat $varchemhomeopathie_sauv`;
-echo "Homéopathie: $dire_homeopathie $ligne_num_homeopathie." > $varchemhomeopathie_sauv;
+echo "Homéopathie: $dire_homeopathie %0d $ligne_num_homeopathie." > $varchemhomeopathie_sauv;
+ligne_num_homeopathie=`echo "$ligne_num_homeopathie" | sed -e "s/- / /g" | sed -e "s/%0d/,/g"`;
+say " $dire_homeopathie $ligne_num_homeopathie";
 
-# say "$ligne_num_homeopathie";
-# homeopathie_sms=`cat $varchemhomeopathie_sauv`;
-# echo "$homeopathie_sms $ligne_num_homeopathie." > $varchemhomeopathie_sauv;
-
-if [[ "$homeopathie_feuxvert" == "Ok" ]]; then 
-say "A qui j'envoie ce sms ? $(jv_pg_ct_ilyanom) ou personne ?";
-return;
+if [[ "$GOTOSORTIHOMEOPATHI" == "Ok" ]]; then 
+	if jv_plugin_is_enabled "jarvis-FREE-sms"; then
+	say "A qui j'envoie ce sms ? $(jv_pg_ct_ilyanom) ou personne ?";
+	return;
+	else
+	GOTOSORTIHOMEOPATHI="FIN";
+	fi
+	
 fi
 
 }
@@ -58,10 +60,19 @@ if [[ "$order" =~ "person" ]]; then say "Ok, soignez-vous bien...";
 return;
 fi
 
-PNOM=""homeopathie_sms=`cat $varchemhomeopathie_sauv | sed -n 1p`;
-PNOM=`cat $varchemhomeopathie_sauv | sed -n 2p`;
+jv_pg_ct_verinoms;
+
+if test -z "$PNOM"; then 
+PNOM=""
+return; 
+fi
+
+if [[ "$order" =~ "$PNOM" ]]; then
+homeopathie_sms=`cat $varchemhomeopathie_sauv | sed -n 1p`;
 commands="$(jv_get_commands)"; jv_handle_order "MESSEXTERNE ; $PNOM ; $homeopathie_sms"; return;
 return;
+fi
+say "je n'ai pas reconnu le nom désolé, annulation...";
 }
 
 jv_pg_homeopathie_recommandation1 () {
@@ -97,7 +108,15 @@ say "mal des transports, toux quinteuse, trac, difficultés d’endormissement."
 say "indigestion, crise de foie, gueule de bois.";
 say "états grippaux, allergies.";
 say "courbatures après l’effort.";
-say "Puis je vous envoyer le nom des granules par sms à $(jv_pg_ct_ilyanom) ou personne ?";
+	if jv_plugin_is_enabled "jarvis-FREE-sms"; then
+	say "Puis je vous envoyer le nom des granules par sms à $(jv_pg_ct_ilyanom) ou personne ?";
+	return;
+	else
+	say "Voilà !"
+	GOTOSORTIHOMEOPATHI="FIN";
+        return;
+	fi
+
 }
 
 jv_pg_homeopathie_recommandation3_sms() {
@@ -115,7 +134,7 @@ PNOM=""
 return; 
 fi
 
-homeopathie_urgence="Allium cepa 9 CH -Apis mellifica 7 CH - Arnica montana 7 CH - Belladona 9 CH - Chamomilla 9 CH - China 9 CH - Cocculine - Drosera 9 CH - Gelsemium 9 CH - Nux vomica 7 CH -Oscillococcinum 200 -Poumon histamine 9 CH - Rhus toxicodendron 9 CH";
+homeopathie_urgence="La Trousse de secours: %0d-Allium cepa 9 CH %0d-Apis mellifica 7 CH %0d-Arnica montana 7 CH %0d-Belladona 9 CH %0d-Chamomilla 9 CH %0d-China 9 CH %0d-Cocculine %0d-Drosera 9 CH %0d-Gelsemium 9 CH %0d-Nux vomica 7 CH %0d-Oscillococcinum 200 %0d-Poumon histamine 9 CH %0d-Rhus toxicodendron 9 CH";
 commands="$(jv_get_commands)"; jv_handle_order "MESSEXTERNE ; $PNOM ; $homeopathie_urgence"; return;
 }
 
@@ -146,7 +165,9 @@ symptome_homeopathie1=$symptome_homeopathie;
 ligne_num_homeopathie_total=`grep -i -n "\-$symptome_homeopathie-"  $chemin | cut -d: -f1 | wc -w`;
 
 if [[ "$ligne_num_homeopathie_total" -ge "1" ]]; then
-ligne_num_homeopathie=`grep -i "\-$symptome_homeopathie-"  $chemin | cut -d"-" -f1 | sort | uniq | paste -s -d ","`;
+ligne_num_homeopathie=`grep -i "\-$symptome_homeopathie-"  $chemin | cut -d"-" -f1 | sort | uniq | paste -s -d "%0d - " | sed -e "s/%/%0d - /g"`;
+ligne_num_homeopathie="- $ligne_num_homeopathie"
+
 return;
 fi
 	if [[ "$ligne_num_homeopathie_total" == "0" ]]; then
@@ -159,7 +180,8 @@ fi
 	if [[ "$symptome_homeopathie" == "$symptome_homeopathie1" ]]; then 
 	symptome_homeopathie="$symptome_homeopathie";
 	symptome_homeopathie_trouve="-$symptome_homeopathie-";
-	ligne_num_homeopathie=`grep -i "\-$symptome_homeopathie-"  $chemin | cut -d"-" -f1 | sort | uniq | paste -s -d ","`;
+	ligne_num_homeopathie=`grep -i "\-$symptome_homeopathie-"  $chemin | cut -d"-" -f1 | sort | uniq | paste -s -d "%0d - " | sed -e "s/%/%0d - /g"`;
+	ligne_num_homeopathie="- $ligne_num_homeopathie";
 	
 	homeopathie_test_resulat1;
 	return;
@@ -171,7 +193,8 @@ fi
 
 symptome_homeopathie="$symptome_homeopathie";
 symptome_homeopathie_trouve="-$symptome_homeopathie-";
-ligne_num_homeopathie=`grep -i "\-$symptome_homeopathie-"  $chemin | cut -d"-" -f1 | sort | uniq | paste -s -d ","`;
+ligne_num_homeopathie=`grep -i "\-$symptome_homeopathie-"  $chemin | cut -d"-" -f1 | sort | uniq | paste -s -d "%0d - " | sed -e "s/%/%0d - /g"`;
+ligne_num_homeopathie="- $ligne_num_homeopathie";
 homeopathie_test_resulat;
 
 
