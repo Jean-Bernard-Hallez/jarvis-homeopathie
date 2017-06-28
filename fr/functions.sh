@@ -64,6 +64,7 @@ jv_pg_ct_verinoms;
 
 if test -z "$PNOM"; then 
 PNOM=""
+GOTOSORTIHOMEOPATHI="FIN"
 return; 
 fi
 

@@ -5,6 +5,6 @@
 
 
 *HOMEOPATHI*==if [[ "$GOTOSORTIHOMEOPATHI" == "FIN" ]]; then commands="$(jv_get_commands)"; jv_handle_order "POIUYTREZA"; return; else memo_homeopathie="$1" && jv_pg_homeopathie; fi && if [[ "$GOTOSORTIHOMEOPATHI" == "FIN" ]]; then commands="$(jv_get_commands)"; jv_handle_order "POIUYTREZA"; return; fi
->(*)==if [[ "$GOTOSORTIHOMEOPATHI" == "FIN" ]]; then commands="$(jv_get_commands)"; jv_handle_order "POIUYTREZA"; return; else jv_pg_homeopathie_sms; fi; return
+>(*)==if [[ "$GOTOSORTIHOMEOPATHI" == "FIN" ]]; then commands="$(jv_get_commands)"; jv_handle_order "POIUYTREZA"; return; else jv_pg_homeopathie_sms && if [[ "$GOTOSORTIHOMEOPATHI" == "FIN" ]]; then commands="$(jv_get_commands)"; jv_handle_order "POIUYTREZA"; return; fi; fi; return
 
 POIUYTREZA==GOTOSORTIHOMEOPATHI=""; jv_pg_homeopathie_reset; return; 
